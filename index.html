@@ -33,7 +33,12 @@
       word-break: keep-all;
       overflow-wrap: break-word;
     }
-    .bingo-cell:active {
+    .bingo-cell.my-turn-clickable:hover {
+      transform: translateY(-2px);
+      border-color: #10b981;
+      background-color: #ecfdf5;
+    }
+    .bingo-cell.my-turn-clickable:active {
       transform: scale(0.94);
     }
     .bingo-cell.marked {
@@ -86,10 +91,10 @@
           <div class="flex items-center gap-2">
             <h1 class="font-title text-xl sm:text-2xl text-slate-800 tracking-wide leading-none">학급용 빙고 게임기</h1>
             <span id="connection-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
-              로컬 단독 모드
+              연결 확인 중...
             </span>
           </div>
-          <p class="text-xs text-slate-500 hidden sm:block mt-0.5">교실 TV · 학생 태블릿 실시간 연동 빙고</p>
+          <p class="text-xs text-slate-500 hidden sm:block mt-0.5">랜덤 차례 진행 · 전교생 자동 체크 · 실시간 줄 수/순위 집계</p>
         </div>
       </div>
 
@@ -117,16 +122,15 @@
   <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 sm:py-7 flex flex-col">
 
     <!-- =========================================================
-         VIEW 0: 홈 화면 (선생님 방 만들기 vs 학생 입장하기 vs 단독 플레이)
+         VIEW 0: 홈 화면
     ========================================================== -->
     <section id="view-home" class="my-auto max-w-4xl w-full mx-auto space-y-6">
-      <!-- DB 상태 알림 배너 -->
-      <div id="db-warning-banner" class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div id="db-warning-banner" class="hidden bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div class="flex items-start gap-3">
           <span class="text-2xl">⚠️</span>
           <div>
-            <div class="font-bold text-amber-900 text-sm">현재 [로컬 단독 모드]로 실행 중입니다 (실시간 멀티플레이 비활성)</div>
-            <div class="text-xs text-amber-700 mt-0.5">학생들 폰/태블릿과 실시간으로 연동하려면 우측 상단 <strong>[🔥 DB 서버 설정]</strong>에 Firebase 설정값을 붙여넣으세요!</div>
+            <div class="font-bold text-amber-900 text-sm">현재 [로컬 단독 모드]로 실행 중입니다</div>
+            <div class="text-xs text-amber-700 mt-0.5">우측 상단 <strong>[🔥 DB 서버 설정]</strong>에 Firebase 설정값을 입력하세요.</div>
           </div>
         </div>
         <button onclick="openFirebaseModal()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold whitespace-nowrap shadow-sm">
@@ -134,7 +138,6 @@
         </button>
       </div>
 
-      <!-- 메인 모드 선택 카드 2개 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <!-- 선생님 카드 -->
         <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-md border-2 border-blue-100 hover:border-blue-400 transition flex flex-col justify-between">
@@ -144,7 +147,7 @@
             </div>
             <h2 class="font-title text-2xl sm:text-3xl text-slate-800 mb-2">선생님 (방 만들기)</h2>
             <p class="text-sm text-slate-500 leading-relaxed mb-6">
-              빙고 단어를 입력하고 방을 개설합니다. 교실 TV에 QR코드와 단어 추첨기를 띄우고 학생들의 빙고 현황을 실시간으로 확인합니다.
+              빙고 단어를 설정하거나 자유 입력 방을 개설합니다. 학생들이 입장하면 랜덤 순서를 배정해 게임을 시작하고, <strong>줄 수별 완성자 및 1등 순위</strong>를 실시간으로 확인합니다.
             </p>
           </div>
           <button onclick="showTeacherSetup()"
@@ -161,7 +164,7 @@
             </div>
             <h2 class="font-title text-2xl sm:text-3xl text-slate-800 mb-2">학생 (방 입장하기)</h2>
             <p class="text-sm text-slate-500 leading-relaxed mb-4">
-              선생님이 알려준 <strong>방 코드(4자리)</strong>와 내 이름을 입력하고 나만의 빙고판을 만들어 게임에 참여합니다.
+              선생님이 알려준 <strong>방 코드(4자리)</strong>와 이름을 입력해 입장합니다. 직접 쓰기, 단어 터치, 완전 랜덤 자동 채우기로 나만의 빙고판을 만듭니다!
             </p>
             <div class="space-y-2.5 mb-5">
               <input type="text" id="join-room-code" maxlength="6" placeholder="방 코드 입력 (예: 4829)"
@@ -180,7 +183,7 @@
       <!-- 오프라인 단독 플레이 바로가기 -->
       <div class="bg-white/80 rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div class="text-sm text-slate-600">
-          <strong>인터넷/DB 없이 혼자 쓰시나요?</strong> 교실 화면 하나만 띄워놓고 클릭하며 진행하는 단독 모드도 지원합니다.
+          <strong>교실 TV 한 대로만 진행하시나요?</strong> 개인 기기 없이 화면 하나만 띄워놓고 클릭하는 단독 모드도 지원합니다.
         </div>
         <button onclick="startSoloModeSetup()"
           class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-bold whitespace-nowrap transition">
@@ -193,7 +196,6 @@
          VIEW 1: 선생님 / 로컬 방 설정 화면
     ========================================================== -->
     <section id="view-teacher-setup" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <!-- 왼쪽 설정 (5칸) -->
       <div class="lg:col-span-5 space-y-5">
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-blue-100">
           <h2 class="font-title text-xl text-blue-700 mb-4 flex items-center gap-2">
@@ -206,7 +208,6 @@
               class="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-200 focus:border-blue-500 outline-none text-sm font-bold" />
           </div>
 
-          <!-- 크기 선택 -->
           <div class="mb-4">
             <label class="block text-sm font-bold text-slate-700 mb-1.5">빙고판 크기</label>
             <div class="grid grid-cols-3 gap-2">
@@ -216,8 +217,7 @@
             </div>
           </div>
 
-          <!-- 목표 줄 수 -->
-          <div class="mb-4">
+          <div class="mb-2">
             <div class="flex justify-between items-center mb-1.5">
               <label class="text-sm font-bold text-slate-700">목표 빙고 줄 수</label>
               <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full" id="target-bingo-badge">3줄 달성 시 승리</span>
@@ -230,21 +230,8 @@
               <button type="button" data-lines="5" onclick="setTargetLines(5)" class="line-btn py-2 rounded-xl border-2 border-slate-200 bg-slate-50 font-bold text-slate-600 text-sm">5줄</button>
             </div>
           </div>
-
-          <!-- 체크 제한 옵션 (멀티플레이 전용) -->
-          <div id="strict-mode-wrapper" class="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <div>
-              <div class="text-sm font-bold text-slate-700">선생님이 부른 단어만 체크 허용</div>
-              <div class="text-xs text-slate-500">학생들이 안 나온 단어를 미리 누르는 것 방지</div>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="strict-call-mode" class="sr-only peer" checked />
-              <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
         </div>
 
-        <!-- 추천 주제어 프리셋 -->
         <div class="bg-white rounded-2xl p-5 shadow-sm border border-blue-100">
           <h2 class="font-title text-lg text-indigo-700 mb-2 flex items-center gap-2">
             <span>📚</span> 추천 주제어 자동 채우기
@@ -252,38 +239,37 @@
           <div class="grid grid-cols-2 gap-2">
             <button type="button" onclick="applyPreset('numbersSeq')" class="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold text-left">🔢 1 ~ 25 숫자</button>
             <button type="button" onclick="applyPreset('numbersRand')" class="p-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold text-left">🎲 1 ~ 50 랜덤 숫자</button>
-            <button type="button" onclick="applyPreset('fruits')" class="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold text-left">🍎 과일 · 채소</button>
-            <button type="button" onclick="applyPreset('animals')" class="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold text-left">🦁 동물 친구들</button>
-            <button type="button" onclick="applyPreset('countries')" class="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold text-left">🌍 세계 여러 나라</button>
-            <button type="button" onclick="applyPreset('idioms')" class="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold text-left">📜 초등 사자성어</button>
-            <button type="button" onclick="applyPreset('english')" class="p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold text-left">🔤 기초 영단어</button>
-            <button type="button" onclick="applyPreset('jobs')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold text-left">👩‍⚕️ 다양한 직업</button>
+            <button type="button" onclick="applyPreset('fruits')" class="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold text-left">🍎 과일 · 채소 (30개)</button>
+            <button type="button" onclick="applyPreset('animals')" class="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold text-left">🦁 동물 친구들 (30개)</button>
+            <button type="button" onclick="applyPreset('countries')" class="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-bold text-left">🌍 세계 여러 나라 (30개)</button>
+            <button type="button" onclick="applyPreset('idioms')" class="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold text-left">📜 초등 사자성어 (25개)</button>
+            <button type="button" onclick="applyPreset('english')" class="p-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold text-left">🔤 기초 영단어 (30개)</button>
+            <button type="button" onclick="applyPreset('jobs')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold text-left">👩‍⚕️ 다양한 직업 (30개)</button>
           </div>
         </div>
       </div>
 
-      <!-- 오른쪽 단어 입력 (7칸) -->
       <div class="lg:col-span-7 bg-white rounded-2xl p-5 shadow-sm border border-blue-100 flex flex-col">
         <div class="flex items-center justify-between gap-2 mb-2">
           <h2 class="font-title text-xl text-blue-700 flex items-center gap-2">
-            <span>✏️</span> 2. 빙고 단어 목록 입력
+            <span>✏️</span> 2. 제시어 목록 입력 (선택사항)
           </h2>
           <span id="word-count-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
-            입력된 단어: 0 / 25개
+            입력된 단어: 0개
           </span>
         </div>
         <p class="text-xs text-slate-500 mb-3">
-          엔터(줄바꿈) 또는 쉼표(,)로 구분해서 입력하세요. 최소 칸 수(9/16/25개) 이상 입력하면 학생들은 이 단어들로 자기만의 빙고판을 만듭니다.
+          엔터(줄바꿈) 또는 쉼표(,)로 구분해서 입력하세요. <strong>단어를 비워두고 개설하면 학생들이 직접 타이핑해서 채우는 자유 빙고방</strong>이 됩니다!
         </p>
 
-        <textarea id="word-input-area" rows="10" oninput="updateWordCount()"
+        <textarea id="word-input-area" rows="10" oninput="updateWordCount()" placeholder="예시:&#10;사과&#10;바나나&#10;딸기&#10;(비워두면 학생들이 직접 입력하는 모드로 열립니다)"
           class="w-full h-64 p-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 outline-none text-base leading-relaxed resize-none bg-slate-50/50 mb-3"></textarea>
 
         <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div class="flex flex-wrap gap-1.5">
             <button type="button" onclick="shuffleInputWords()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">🔀 섞기</button>
             <button type="button" onclick="removeDuplicateWords()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">🧹 중복제거</button>
-            <button type="button" onclick="clearInputWords()" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">🗑️ 비우기</button>
+            <button type="button" onclick="clearInputWords()" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">🗑️ 비우기 (자유입력방)</button>
           </div>
           <div class="flex items-center gap-1.5">
             <button type="button" onclick="openSaveModal()" class="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold">💾 단어장 저장</button>
@@ -304,10 +290,9 @@
     <section id="view-teacher-dashboard" class="hidden space-y-5">
       <!-- 상단 방 정보 & QR코드 초대 배너 -->
       <div class="bg-white rounded-3xl p-5 shadow-sm border border-blue-100 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-        <!-- 방 코드 & 접속 링크 -->
         <div class="lg:col-span-7 space-y-3">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-bold">선생님 진행 화면</span>
+            <span id="dash-status-pill" class="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold">대기 중 (학생 입장 단계)</span>
             <h2 id="dash-room-title" class="font-title text-2xl text-slate-800">즐거운 학급 빙고 게임</h2>
           </div>
 
@@ -318,7 +303,7 @@
             </div>
             <div class="h-12 w-px bg-blue-200 hidden sm:block"></div>
             <div class="flex-1 min-w-[200px]">
-              <div class="text-xs font-bold text-slate-600 mb-1">학생 바로 접속 링크 (태블릿 공유용)</div>
+              <div class="text-xs font-bold text-slate-600 mb-1">학생 바로 접속 링크</div>
               <div class="flex items-center gap-1.5">
                 <input type="text" id="dash-join-url" readonly
                   class="w-full px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-xs text-slate-600 outline-none" />
@@ -335,76 +320,129 @@
           <div class="text-right">
             <div class="font-title text-lg text-slate-800">📱 QR코드 스캔 입장</div>
             <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-              학생들이 태블릿/스마트폰 카메라로<br/>QR코드를 비추면 방 코드가<br/>자동으로 입력되어 입장합니다.
+              학생들이 태블릿/스마트폰 카메라로<br/>QR코드를 비추면 방 코드가<br/>자동 입력되어 입장합니다.
             </p>
           </div>
           <div id="qrcode-container" class="bg-white p-2.5 rounded-xl shadow-sm border border-slate-200 shrink-0"></div>
         </div>
       </div>
 
-      <!-- 하단 2단 레이아웃: 왼쪽(단어 추첨 및 호명) / 오른쪽(학생 실시간 빙고 순위표) -->
+      <!-- 중단: 랜덤 턴 진행 컨트롤 전광판 -->
+      <div class="bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 rounded-3xl p-5 sm:p-6 text-white shadow-lg">
+        <!-- 대기 상태 컨트롤 -->
+        <div id="dash-waiting-controls" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="font-title text-2xl sm:text-3xl">학생들이 빙고판을 채우고 있습니다...</div>
+            <p class="text-xs sm:text-sm text-blue-100 mt-1">
+              준비 완료된 학생이 1명 이상이면 게임을 시작할 수 있습니다. 시작하면 <strong>학생들의 순서가 랜덤으로 배정</strong>됩니다!
+            </p>
+          </div>
+          <button onclick="teacherStartTurnGame()"
+            class="px-7 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-title text-xl sm:text-2xl shadow-xl transition transform active:scale-95 whitespace-nowrap">
+            ▶️ 게임 시작 (랜덤 순서 배정)
+          </button>
+        </div>
+
+        <!-- 진행 중 상태 컨트롤 -->
+        <div id="dash-playing-controls" class="hidden space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="md:col-span-5 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+              <div class="text-xs font-bold text-amber-300">🎯 현재 단어 선택 차례</div>
+              <div id="dash-current-turn-name" class="font-title text-3xl sm:text-4xl mt-1 truncate">
+                -
+              </div>
+              <div id="dash-next-turn-preview" class="text-xs text-blue-100 mt-1">
+                다음 차례: -
+              </div>
+            </div>
+
+            <div class="md:col-span-4 bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/20 text-center">
+              <div class="text-xs font-bold text-blue-200">방금 선택된 단어</div>
+              <div id="dash-latest-word" class="font-title text-3xl sm:text-4xl mt-1 text-amber-300 truncate">
+                선택 대기 중
+              </div>
+              <div id="dash-called-count-label" class="text-xs text-blue-100 mt-1">
+                총 0개 체크됨
+              </div>
+            </div>
+
+            <div class="md:col-span-3 flex flex-col gap-2">
+              <button onclick="teacherSkipCurrentTurn()"
+                class="w-full py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-xs sm:text-sm shadow transition">
+                ⏭️ 다음 사람으로 넘기기
+              </button>
+              <button onclick="teacherResetToLobby()"
+                class="w-full py-2 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition">
+                🔄 새 판 다시 시작
+              </button>
+            </div>
+          </div>
+
+          <!-- 전체 랜덤 순서 칩 나열 -->
+          <div class="bg-black/15 rounded-2xl p-3">
+            <div class="text-[11px] font-bold text-blue-200 mb-1.5">🎲 배정된 랜덤 순서 (화살표 방향 진행)</div>
+            <div id="dash-turn-order-chips" class="flex flex-wrap items-center gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 하단 2단: 왼쪽(줄 수별 현황 + 1등 순위표) / 오른쪽(전체 참여 학생 목록 & 선택된 단어) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         
-        <!-- 왼쪽: 교사용 단어 추첨기 & 단어판 (7칸) -->
-        <div class="lg:col-span-7 bg-white rounded-3xl p-5 shadow-sm border border-blue-100 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-title text-xl text-slate-800 flex items-center gap-2">
-              <span>🎰</span> 제시어 뽑기 · 호명하기
-            </h3>
-            <span id="dash-called-progress" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-              호명된 단어: 0 / 25개
-            </span>
-          </div>
-
-          <!-- 대형 추첨 전광판 -->
-          <div class="bg-gradient-to-br from-indigo-600 to-blue-600 rounded-2xl p-6 text-center text-white shadow-md relative overflow-hidden">
-            <div class="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">현재 뽑힌 제시어</div>
-            <div id="dash-latest-word" class="font-title text-4xl sm:text-6xl my-3 min-h-[4rem] flex items-center justify-center break-keep">
-              단어를 뽑아주세요!
+        <!-- 왼쪽 7칸: 목표 빙고 순위표 & 줄 수별 완성자 현황 -->
+        <div class="lg:col-span-7 space-y-5">
+          <!-- 1. 목표 줄 수 달성 순위 (1등, 2등, 3등...) -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border-2 border-amber-200">
+            <div class="flex items-center justify-between pb-3 border-b border-amber-100 mb-3">
+              <h3 class="font-title text-xl text-amber-700 flex items-center gap-2">
+                <span>🏆</span> 목표 달성 순위 (<span id="dash-goal-title">3줄</span> 빙고 선착순)
+              </h3>
+              <span id="dash-winner-count" class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">
+                달성 0명
+              </span>
             </div>
-            <div class="flex flex-wrap items-center justify-center gap-2.5 mt-4">
-              <button onclick="teacherDrawRandomWord()"
-                class="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-title text-xl shadow-lg transition transform active:scale-95">
-                🎲 랜덤 단어 뽑기
-              </button>
-              <button onclick="teacherResetGame()"
-                class="px-4 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm transition">
-                🔄 새 판 시작 (초기화)
-              </button>
+            <div id="dash-winners-list" class="space-y-2">
+              <div class="py-6 text-center text-sm text-slate-400">
+                아직 목표 줄 수를 달성한 학생이 없습니다.
+              </div>
             </div>
           </div>
 
-          <!-- 전체 단어 버튼 목록 (클릭 시 수동 호명/취소 가능) -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-slate-600">전체 단어 목록 (직접 클릭해서 부를 수도 있습니다)</span>
-              <span class="text-[11px] text-slate-400">파란색 = 이미 부른 단어</span>
+          <!-- 2. 줄 수별 완성자 현황 (예: 3줄 완성 / 2줄 완성 / 1줄 완성) -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-blue-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+              <h3 class="font-title text-xl text-slate-800 flex items-center gap-2">
+                <span>📊</span> 줄 수별 빙고 현황
+              </h3>
+              <span class="text-xs text-slate-400">자동 집계</span>
             </div>
-            <div id="dash-word-pool" class="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-64 overflow-y-auto p-1">
-              <!-- 동적 렌더링 -->
-            </div>
+            <div id="dash-line-buckets" class="space-y-3"></div>
           </div>
         </div>
 
-        <!-- 오른쪽: 접속 학생 실시간 현황 & 빙고 랭킹 (5칸) -->
-        <div class="lg:col-span-5 bg-white rounded-3xl p-5 shadow-sm border border-blue-100 flex flex-col">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <h3 class="font-title text-xl text-slate-800 flex items-center gap-2">
-              <span>🏆</span> 실시간 학생 빙고 현황
-            </h3>
-            <span id="dash-student-count" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-              참여 0명
-            </span>
+        <!-- 오른쪽 5칸: 전체 학생 상태 & 체크된 단어 목록 -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-blue-100">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+              <h3 class="font-title text-xl text-slate-800 flex items-center gap-2">
+                <span>👥</span> 전체 참여 학생
+              </h3>
+              <span id="dash-student-count" class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                총 0명
+              </span>
+            </div>
+            <div id="dash-student-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div class="py-8 text-center text-sm text-slate-400">
+                아직 입장한 학생이 없습니다.
+              </div>
+            </div>
           </div>
 
-          <div class="text-xs text-slate-500 mb-3 flex items-center justify-between">
-            <span>목표 달성 기준: <strong id="dash-target-lines-label" class="text-blue-600">3줄 빙고</strong></span>
-            <span>실시간 자동 정렬</span>
-          </div>
-
-          <div id="dash-student-list" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
-            <div class="py-12 text-center text-sm text-slate-400">
-              아직 입장한 학생이 없습니다.<br/>학생들에게 방 코드나 QR코드를 보여주세요!
+          <!-- 지금까지 체크된 단어 기록 -->
+          <div class="bg-white rounded-3xl p-5 shadow-sm border border-blue-100">
+            <h3 class="font-title text-lg text-slate-800 mb-2">📝 지금까지 나온 단어 기록</h3>
+            <div id="dash-called-history-box" class="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 rounded-xl">
+              <span class="text-xs text-slate-400">아직 선택된 단어가 없습니다.</span>
             </div>
           </div>
         </div>
@@ -413,48 +451,52 @@
     </section>
 
     <!-- =========================================================
-         VIEW 3: 학생 빙고판 배치 준비 화면 (STUDENT BOARD SETUP)
+         VIEW 3: 학생 빙고판 배치 준비 화면 (직접 쓰기 + 터치 + 완전 랜덤 자동 채우기)
     ========================================================== -->
-    <section id="view-student-setup" class="hidden max-w-4xl w-full mx-auto space-y-4">
+    <section id="view-student-setup" class="hidden max-w-5xl w-full mx-auto space-y-4">
       <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100 flex flex-wrap items-center justify-between gap-3">
         <div>
           <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold" id="stu-setup-room-badge">방 코드: 0000</span>
           <h2 class="font-title text-xl sm:text-2xl text-slate-800 mt-1">
-            <span id="stu-setup-name" class="text-emerald-600">학생</span>님의 빙고판 채우기
+            <span id="stu-setup-name" class="text-emerald-600">학생</span>님의 빙고판 만들기
           </h2>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="studentAutoFillBoard()"
-            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-sm transition">
-            🎲 자동 랜덤 배치
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="stu-autofill-btn" onclick="studentAutoFillBoard()"
+            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-sm transition transform active:scale-95">
+            🎲 완전 랜덤 자동 채우기
           </button>
           <button onclick="studentClearBoard()"
             class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm transition">
-            초기화
+            전체 비우기
           </button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-        <!-- 왼쪽: 내가 채울 N x N 빙고판 (7칸) -->
-        <div class="md:col-span-7 bg-white rounded-3xl p-4 shadow-sm border border-emerald-100">
-          <div class="text-xs text-slate-500 mb-2 text-center">
-            오른쪽 단어를 클릭하면 빈 칸에 순서대로 들어갑니다. (칸을 클릭하면 취소)
+        <!-- 왼쪽 7칸: 직접 타이핑 가능한 N x N 빙고판 -->
+        <div class="md:col-span-7 bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-emerald-100">
+          <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-2.5 mb-3 text-xs text-emerald-900 flex flex-wrap items-center justify-between gap-1">
+            <span>✍️ <strong>칸을 눌러 직접 타이핑</strong>하거나, 오른쪽 단어를 터치해 채우세요!</span>
+            <span id="stu-setup-progress" class="font-bold text-emerald-700">0 / 25칸 완료</span>
           </div>
-          <div class="w-full aspect-square max-w-[440px] mx-auto">
+
+          <div class="w-full aspect-square max-w-[460px] mx-auto">
             <div id="stu-setup-grid" class="w-full h-full grid gap-2"></div>
           </div>
         </div>
 
-        <!-- 오른쪽: 선생님이 출제한 단어 선택지 (5칸) -->
-        <div class="md:col-span-5 bg-white rounded-3xl p-4 shadow-sm border border-emerald-100 flex flex-col">
+        <!-- 오른쪽 5칸: 선생님이 제시한 단어 터치 선택지 -->
+        <div class="md:col-span-5 bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-emerald-100 flex flex-col">
           <div class="flex items-center justify-between mb-2">
-            <span class="font-bold text-sm text-slate-700">선택 가능한 단어</span>
-            <span id="stu-setup-progress" class="text-xs font-bold text-emerald-600">0 / 25칸 완료</span>
+            <span class="font-bold text-sm text-slate-700">👆 터치해서 빈 칸 채우기</span>
+            <span id="stu-word-bank-count" class="text-xs font-bold text-slate-400">0개 제시어</span>
           </div>
+
           <div id="stu-word-bank" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-80 overflow-y-auto p-1 mb-4">
             <!-- 동적 렌더링 -->
           </div>
+
           <button id="stu-ready-btn" onclick="studentConfirmBoard()" disabled
             class="w-full py-3.5 rounded-2xl bg-slate-300 text-white font-title text-xl transition cursor-not-allowed">
             빙고판을 모두 채워주세요
@@ -464,22 +506,26 @@
     </section>
 
     <!-- =========================================================
-         VIEW 4: 게임 플레이 화면 (학생 실시간 & 로컬 단독 모드 공용)
+         VIEW 4: 게임 플레이 화면 (학생 실시간 턴제 & 로컬 단독 모드 공용)
     ========================================================== -->
     <section id="view-gameplay" class="hidden flex-1 flex flex-col max-w-3xl w-full mx-auto">
       
-      <!-- 멀티플레이 시: 선생님이 방금 부른 단어 실시간 전광판 -->
-      <div id="stu-live-banner" class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-2xl p-3.5 sm:p-4 shadow-md mb-3 flex items-center justify-between gap-3">
-        <div>
-          <div class="text-[11px] font-bold text-blue-200">선생님이 부른 최신 단어</div>
-          <div id="stu-latest-called" class="font-title text-2xl sm:text-3xl tracking-wide mt-0.5">
-            대기 중...
+      <!-- 멀티플레이 시: 현재 누구 차례인지 & 방금 선택된 단어 실시간 전광판 -->
+      <div id="stu-live-banner" class="rounded-2xl p-4 shadow-md mb-3 transition-colors duration-300 bg-slate-800 text-white">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div id="stu-turn-badge" class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 mb-1">
+              게임 시작 대기 중
+            </div>
+            <div id="stu-turn-headline" class="font-title text-2xl sm:text-3xl tracking-wide">
+              선생님이 게임을 시작할 때까지 기다려주세요!
+            </div>
           </div>
-        </div>
-        <div class="text-right">
-          <div class="text-[11px] text-blue-200 mb-1">이전 단어 기록</div>
-          <div id="stu-called-history" class="flex flex-wrap justify-end gap-1 max-w-[200px] sm:max-w-[300px]">
-            <span class="text-xs text-blue-200/70">없음</span>
+          <div class="text-right bg-black/20 px-3.5 py-2 rounded-xl">
+            <div class="text-[11px] opacity-80">방금 나온 단어</div>
+            <div id="stu-latest-called" class="font-title text-xl sm:text-2xl text-amber-300">
+              -
+            </div>
           </div>
         </div>
       </div>
@@ -531,25 +577,12 @@
         <button onclick="closeFirebaseModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold">✕</button>
       </div>
 
-      <p class="text-xs text-slate-600 leading-relaxed">
-        Firebase 콘솔에서 발급받은 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-rose-600 font-bold">firebaseConfig</code> 객체(중괄호 포함 전체)를 아래에 붙여넣고 저장하면 즉시 실시간 멀티플레이 서버가 활성화됩니다.
-      </p>
-
       <textarea id="firebase-config-textarea" rows="8"
-        placeholder='{
-  apiKey: "AIzaSy...",
-  authDomain: "your-app.firebaseapp.com",
-  databaseURL: "https://your-app-default-rtdb.firebaseio.com",
-  projectId: "your-app",
-  storageBucket: "your-app.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
-}'
         class="w-full p-3.5 rounded-xl border-2 border-slate-200 focus:border-blue-500 outline-none font-mono text-xs bg-slate-50"></textarea>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
         <button onclick="clearSavedFirebaseConfig()" class="px-3.5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold">
-          설정 초기화 (로컬 모드)
+          기본값으로 복원
         </button>
         <div class="flex gap-2">
           <button onclick="closeFirebaseModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">취소</button>
@@ -569,11 +602,12 @@
       <div class="text-6xl mb-3">🏆</div>
       <h2 class="font-title text-3xl sm:text-4xl text-slate-800 mb-2">🎉 BINGO! 🎉</h2>
       <p class="text-slate-600 text-base mb-6">
-        축하합니다! <strong id="victory-lines-text" class="text-blue-600 font-bold">3줄 빙고</strong>를 달성했습니다!
+        축하합니다! <strong id="victory-lines-text" class="text-blue-600 font-bold">3줄 빙고</strong>를 달성했습니다!<br/>
+        <span class="text-xs text-slate-400">선생님 화면 순위표에 자동 등록되었습니다.</span>
       </p>
       <button onclick="closeVictoryModal()"
         class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-base shadow-md">
-        확인 (계속 플레이)
+        확인 (계속 관전/참여)
       </button>
     </div>
   </div>
@@ -630,20 +664,18 @@
 
   <script>
     /* ==========================================================================
-       [중요] FIREBASE 설정 영역
-       본인의 Firebase 프로젝트 설정값을 아래 객체에 직접 붙여넣거나,
-       웹페이지 우측 상단 [🔥 DB 서버 설정] 버튼을 눌러 저장하면 영구 적용됩니다.
+       FIREBASE 설정
     ========================================================================== */
-const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDMQJnSwF09W-qKcHGFqzr3fNoQSQN-cq8",
-  authDomain: "seat-f3944.firebaseapp.com",
-  databaseURL: "https://seat-f3944-default-rtdb.firebaseio.com",
-  projectId: "seat-f3944",
-  storageBucket: "seat-f3944.firebasestorage.app",
-  messagingSenderId: "288606604988",
-  appId: "1:288606604988:web:0f99a5ada0097678814ab9",
-  measurementId: "G-00PDMEQRZ3"
-};
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDMQJnSwF09W-qKcHGFqzr3fNoQSQN-cq8",
+      authDomain: "seat-f3944.firebaseapp.com",
+      databaseURL: "https://seat-f3944-default-rtdb.firebaseio.com",
+      projectId: "seat-f3944",
+      storageBucket: "seat-f3944.firebasestorage.app",
+      messagingSenderId: "288606604988",
+      appId: "1:288606604988:web:0f99a5ada0097678814ab9",
+      measurementId: "G-00PDMEQRZ3"
+    };
 
     const FB_STORAGE_KEY = 'classroom_bingo_firebase_config_v1';
     const WORD_STORAGE_KEY = 'classroom_bingo_saved_sets_v1';
@@ -653,7 +685,7 @@ const DEFAULT_FIREBASE_CONFIG = {
     let activeListeners = [];
 
     /* ==========================================================================
-       1. 기본 주제어 프리셋
+       1. 기본 주제어 프리셋 (30개씩 넉넉하게 구성해 랜덤 조합 다양화)
     ========================================================================== */
     const PRESETS = {
       fruits: ["사과", "바나나", "딸기", "포도", "수박", "참외", "복숭아", "자두", "귤", "오렌지", "키위", "파인애플", "망고", "블루베리", "체리", "토마토", "당근", "오이", "고구마", "감자", "옥수수", "브로콜리", "양파", "배추", "호박", "레몬", "멜론", "배", "감", "석류"],
@@ -668,7 +700,7 @@ const DEFAULT_FIREBASE_CONFIG = {
        2. 전역 앱 상태
     ========================================================================== */
     const state = {
-      mode: 'home', // 'home' | 'teacher-setup' | 'solo-setup' | 'teacher-dash' | 'student-setup' | 'gameplay-student' | 'gameplay-solo'
+      mode: 'home',
       gridSize: 5,
       targetLines: 3,
       soundEnabled: true,
@@ -676,19 +708,24 @@ const DEFAULT_FIREBASE_CONFIG = {
       // 방 정보
       roomCode: '',
       roomTitle: '',
+      roomStatus: 'waiting',
       wordPool: [],
       calledWords: [],
-      strictCallMode: true,
+      turnOrder: [],
+      currentTurnIndex: 0,
+      studentsMap: {},
 
       // 학생 개인 상태
       studentId: '',
       studentName: '',
-      setupBoard: [], // 학생이 배치 중인 칸 배열
-      boardWords: [], // 확정된 빙고판 단어 배열
+      setupBoard: [], // 문자열 배열 (빈 칸은 '')
+      boardWords: [],
       marked: [],
       winningIndices: new Set(),
       completedLines: 0,
+      achievedGoalAt: null,
       hasCelebrated: false,
+      isSubmittingTurn: false,
 
       // 로컬 단독 모드 추첨기
       soloDrawerPool: [],
@@ -696,31 +733,49 @@ const DEFAULT_FIREBASE_CONFIG = {
     };
 
     /* ==========================================================================
-       3. Firebase 초기화 및 설정 모달 관리
+       3. 암호학적 무편향 완전 랜덤 셔플 (모든 학생이 서로 다른 빙고판 생성 보장)
+    ========================================================================== */
+    function cryptoRandomInt(maxExclusive) {
+      if (maxExclusive <= 1) return 0;
+      if (window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        const limit = Math.floor(0x100000000 / maxExclusive) * maxExclusive;
+        let val;
+        do {
+          window.crypto.getRandomValues(arr);
+          val = arr[0];
+        } while (val >= limit);
+        return val % maxExclusive;
+      }
+      return Math.floor(Math.random() * maxExclusive);
+    }
+
+    function trueRandomShuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = cryptoRandomInt(i + 1);
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /* ==========================================================================
+       4. Firebase 초기화
     ========================================================================== */
     function initFirebase() {
       let configToUse = DEFAULT_FIREBASE_CONFIG;
       try {
         const savedRaw = localStorage.getItem(FB_STORAGE_KEY);
-        if (savedRaw) {
-          configToUse = JSON.parse(savedRaw);
-        }
-      } catch (e) {
-        console.warn('저장된 Firebase 설정 파싱 오류:', e);
-      }
+        if (savedRaw) configToUse = JSON.parse(savedRaw);
+      } catch (e) {}
 
       if (configToUse && configToUse.apiKey && configToUse.databaseURL) {
         try {
-          if (!firebase.apps.length) {
-            firebase.initializeApp(configToUse);
-          } else {
-            firebase.app().delete().then(() => firebase.initializeApp(configToUse));
-          }
+          if (!firebase.apps.length) firebase.initializeApp(configToUse);
           db = firebase.database();
           isFirebaseReady = true;
           updateConnectionUI(true);
         } catch (err) {
-          console.error('Firebase 초기화 실패:', err);
           isFirebaseReady = false;
           updateConnectionUI(false);
         }
@@ -746,65 +801,48 @@ const DEFAULT_FIREBASE_CONFIG = {
 
     function openFirebaseModal() {
       const savedRaw = localStorage.getItem(FB_STORAGE_KEY);
-      if (savedRaw) {
-        document.getElementById('firebase-config-textarea').value = savedRaw;
-      }
+      document.getElementById('firebase-config-textarea').value = savedRaw || JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
       const modal = document.getElementById('firebase-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
     }
-
     function closeFirebaseModal() {
       const modal = document.getElementById('firebase-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
     }
-
-    // JS 객체 리터럴 형태(따옴표 없는 키)까지 유연하게 파싱
     function parseFlexibleConfig(rawText) {
       let cleaned = rawText.trim();
-      // 'const firebaseConfig = ' 같은 앞부분 제거
       const firstBrace = cleaned.indexOf('{');
       const lastBrace = cleaned.lastIndexOf('}');
-      if (firstBrace === -1 || lastBrace === -1) {
-        throw new Error('올바른 중괄호({ ... }) 형식이 아닙니다.');
-      }
+      if (firstBrace === -1 || lastBrace === -1) throw new Error('Invalid');
       cleaned = cleaned.slice(firstBrace, lastBrace + 1);
-      // JSON.parse 시도 후 실패 시 Function 평가로 객체 추출
-      try {
-        return JSON.parse(cleaned);
-      } catch {
-        const fn = new Function('return ' + cleaned);
-        return fn();
-      }
+      try { return JSON.parse(cleaned); }
+      catch { return (new Function('return ' + cleaned))(); }
     }
-
     function saveFirebaseConfigFromUI() {
       const raw = document.getElementById('firebase-config-textarea').value;
       try {
         const parsed = parseFlexibleConfig(raw);
         if (!parsed.apiKey || !parsed.databaseURL) {
-          showToast('apiKey와 databaseURL 항목이 반드시 포함되어야 합니다!');
+          showToast('apiKey와 databaseURL 항목이 반드시 필요합니다!');
           return;
         }
         localStorage.setItem(FB_STORAGE_KEY, JSON.stringify(parsed, null, 2));
         closeFirebaseModal();
-        showToast('Firebase 설정이 저장되었습니다. 페이지를 새로고침합니다...');
-        setTimeout(() => location.reload(), 900);
-      } catch (err) {
-        showToast('설정값 형식이 올바르지 않습니다. 다시 확인해주세요.');
+        showToast('저장되었습니다. 새로고침합니다...');
+        setTimeout(() => location.reload(), 800);
+      } catch {
+        showToast('설정값 형식이 올바르지 않습니다.');
       }
     }
-
     function clearSavedFirebaseConfig() {
       localStorage.removeItem(FB_STORAGE_KEY);
       closeFirebaseModal();
-      showToast('DB 설정이 초기화되었습니다. 새로고침합니다...');
+      showToast('기본 설정으로 복원되었습니다. 새로고침합니다...');
       setTimeout(() => location.reload(), 800);
     }
 
     /* ==========================================================================
-       4. Web Audio API 효과음
+       5. 효과음
     ========================================================================== */
     let audioCtx = null;
     function playTone(type) {
@@ -815,8 +853,7 @@ const DEFAULT_FIREBASE_CONFIG = {
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        osc.connect(gain); gain.connect(audioCtx.destination);
 
         if (type === 'click') {
           osc.type = 'sine';
@@ -832,6 +869,17 @@ const DEFAULT_FIREBASE_CONFIG = {
           gain.gain.setValueAtTime(0.12, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
           osc.start(now); osc.stop(now + 0.09);
+        } else if (type === 'myturn') {
+          [659.25, 880].forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(freq, now + idx * 0.09);
+            g.gain.setValueAtTime(0.2, now + idx * 0.09);
+            g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.25);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(now + idx * 0.09); o.stop(now + idx * 0.09 + 0.25);
+          });
         } else if (type === 'line') {
           [523.25, 659.25, 783.99].forEach((freq, idx) => {
             const o = audioCtx.createOscillator();
@@ -865,20 +913,14 @@ const DEFAULT_FIREBASE_CONFIG = {
     }
 
     /* ==========================================================================
-       5. 화면 전환 (SPA View Router)
+       6. 화면 전환
     ========================================================================== */
     function switchView(viewId) {
       ['view-home', 'view-teacher-setup', 'view-teacher-dashboard', 'view-student-setup', 'view-gameplay'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
       document.getElementById(viewId).classList.remove('hidden');
-
-      const homeBtn = document.getElementById('home-btn');
-      if (viewId === 'view-home') {
-        homeBtn.classList.add('hidden');
-      } else {
-        homeBtn.classList.remove('hidden');
-      }
+      document.getElementById('home-btn').classList.toggle('hidden', viewId === 'view-home');
     }
 
     function cleanupFirebaseListeners() {
@@ -888,7 +930,6 @@ const DEFAULT_FIREBASE_CONFIG = {
 
     function goHome() {
       cleanupFirebaseListeners();
-      // URL 파라미터 정리
       if (window.history.replaceState) {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -897,23 +938,21 @@ const DEFAULT_FIREBASE_CONFIG = {
     }
 
     /* ==========================================================================
-       6. 선생님 방 만들기 & 설정 로직
+       7. 선생님 방 만들기 & 설정
     ========================================================================== */
     function showTeacherSetup() {
       if (!isFirebaseReady) {
-        showToast('먼저 상단 [🔥 DB 서버 설정]에서 Firebase 설정을 연결해주세요!');
+        showToast('먼저 상단 [🔥 DB 서버 설정]을 완료해주세요!');
         openFirebaseModal();
         return;
       }
       state.mode = 'teacher-setup';
-      document.getElementById('strict-mode-wrapper').classList.remove('hidden');
       document.getElementById('create-room-submit-btn').textContent = '🚀 실시간 빙고 방 개설하기!';
       switchView('view-teacher-setup');
     }
 
     function startSoloModeSetup() {
       state.mode = 'solo-setup';
-      document.getElementById('strict-mode-wrapper').classList.add('hidden');
       document.getElementById('create-room-submit-btn').textContent = '🖥️ 단독 빙고 게임 시작하기!';
       switchView('view-teacher-setup');
     }
@@ -951,10 +990,15 @@ const DEFAULT_FIREBASE_CONFIG = {
       const words = parseInputWords();
       const needed = state.gridSize * state.gridSize;
       const badge = document.getElementById('word-count-badge');
-      badge.textContent = `입력된 단어: ${words.length} / 최소 ${needed}개`;
-      badge.className = words.length >= needed
-        ? 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800'
-        : 'px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800';
+      if (words.length === 0) {
+        badge.textContent = '자유 입력 모드 (0개)';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+      } else {
+        badge.textContent = `입력된 단어: ${words.length}개 (필요 ${needed}칸)`;
+        badge.className = words.length >= needed
+          ? 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800'
+          : 'px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800';
+      }
     }
 
     function applyPreset(key) {
@@ -963,9 +1007,10 @@ const DEFAULT_FIREBASE_CONFIG = {
       if (key === 'numbersSeq') {
         selected = Array.from({ length: needed }, (_, i) => String(i + 1));
       } else if (key === 'numbersRand') {
-        selected = shuffleArray(Array.from({ length: 50 }, (_, i) => String(i + 1))).slice(0, needed);
+        selected = trueRandomShuffle(Array.from({ length: 50 }, (_, i) => String(i + 1))).slice(0, needed);
       } else {
-        selected = shuffleArray([...PRESETS[key]]).slice(0, needed);
+        // 30개 전체를 넣어줘서 학생들이 랜덤 자동 채우기 누를 때마다 매번 다른 조합이 나오게 함
+        selected = trueRandomShuffle([...PRESETS[key]]);
       }
       document.getElementById('word-input-area').value = selected.join('\n');
       updateWordCount();
@@ -974,9 +1019,8 @@ const DEFAULT_FIREBASE_CONFIG = {
 
     function shuffleInputWords() {
       const w = parseInputWords();
-      if (w.length) document.getElementById('word-input-area').value = shuffleArray(w).join('\n');
+      if (w.length) document.getElementById('word-input-area').value = trueRandomShuffle(w).join('\n');
     }
-
     function removeDuplicateWords() {
       const w = parseInputWords();
       const u = [...new Set(w)];
@@ -984,51 +1028,48 @@ const DEFAULT_FIREBASE_CONFIG = {
       updateWordCount();
       showToast(`중복 ${w.length - u.length}개 제거 완료`);
     }
-
     function clearInputWords() {
       document.getElementById('word-input-area').value = '';
       updateWordCount();
     }
 
-    // 방 개설 또는 로컬 단독 게임 시작 분기
     async function submitCreateRoom() {
       const needed = state.gridSize * state.gridSize;
       let words = [...new Set(parseInputWords())];
 
-      // 부족한 단어 자동 채움
-      if (words.length < needed) {
-        let num = 1;
-        while (words.length < needed) {
-          const cand = String(num++);
-          if (!words.includes(cand)) words.push(cand);
-        }
-        showToast('부족한 칸은 숫자로 자동 채워졌습니다.');
-      }
-
       if (state.mode === 'solo-setup') {
+        if (words.length < needed) {
+          let num = 1;
+          while (words.length < needed) {
+            const cand = String(num++);
+            if (!words.includes(cand)) words.push(cand);
+          }
+        }
         startSoloGameplay(words.slice(0, needed));
         return;
       }
 
-      // Firebase 실시간 방 생성
-      const roomCode = String(Math.floor(1000 + Math.random() * 9000)); // 4자리 코드
+      // 멀티플레이 방 생성 (단어가 0개여도 자유 입력 방으로 개설 허용!)
+      const roomCode = String(1000 + cryptoRandomInt(9000));
       const roomTitle = document.getElementById('setup-room-title').value.trim() || '즐거운 학급 빙고';
-      const strictCallMode = document.getElementById('strict-call-mode').checked;
 
       state.roomCode = roomCode;
       state.roomTitle = roomTitle;
+      state.roomStatus = 'waiting';
       state.wordPool = words;
       state.calledWords = [];
-      state.strictCallMode = strictCallMode;
+      state.turnOrder = [];
+      state.currentTurnIndex = 0;
 
-      const roomRef = db.ref(`bingo_rooms/${roomCode}`);
-      await roomRef.set({
+      await db.ref(`bingo_rooms/${roomCode}`).set({
         title: roomTitle,
+        status: 'waiting',
         gridSize: state.gridSize,
         targetLines: state.targetLines,
-        strictCallMode,
         words,
         calledWords: [],
+        turnOrder: [],
+        currentTurnIndex: 0,
         createdAt: firebase.database.ServerValue.TIMESTAMP
       });
 
@@ -1036,7 +1077,7 @@ const DEFAULT_FIREBASE_CONFIG = {
     }
 
     /* ==========================================================================
-       7. 선생님 실시간 관제 대시보드 로직
+       8. 선생님 실시간 관제 대시보드
     ========================================================================== */
     function enterTeacherDashboard() {
       state.mode = 'teacher-dash';
@@ -1044,9 +1085,8 @@ const DEFAULT_FIREBASE_CONFIG = {
 
       document.getElementById('dash-room-title').textContent = state.roomTitle;
       document.getElementById('dash-room-code').textContent = state.roomCode;
-      document.getElementById('dash-target-lines-label').textContent = `${state.targetLines}줄 빙고`;
+      document.getElementById('dash-goal-title').textContent = `${state.targetLines}줄`;
 
-      // 학생 접속 URL 및 QR코드 생성
       const baseUrl = window.location.origin + window.location.pathname;
       const joinUrl = `${baseUrl}?room=${state.roomCode}`;
       document.getElementById('dash-join-url').value = joinUrl;
@@ -1062,138 +1102,203 @@ const DEFAULT_FIREBASE_CONFIG = {
         correctLevel: QRCode.CorrectLevel.M
       });
 
-      renderTeacherWordPool();
+      const roomRef = db.ref(`bingo_rooms/${state.roomCode}`);
+      const onRoomChange = roomRef.on('value', snap => {
+        const data = snap.val();
+        if (!data) return;
 
-      // Firebase 실시간 리스너 연결: 학생 목록 & 빙고 줄 현황
-      const studentsRef = db.ref(`bingo_rooms/${state.roomCode}/students`);
-      const onStudentsChange = studentsRef.on('value', snap => {
-        const val = snap.val() || {};
-        renderTeacherStudentList(val);
+        state.roomStatus = data.status || 'waiting';
+        state.calledWords = data.calledWords || [];
+        state.turnOrder = data.turnOrder || [];
+        state.currentTurnIndex = data.currentTurnIndex || 0;
+        state.studentsMap = data.students || {};
+
+        renderTeacherDashboardUI();
       });
-      activeListeners.push({ ref: studentsRef, event: 'value', fn: onStudentsChange });
+      activeListeners.push({ ref: roomRef, event: 'value', fn: onRoomChange });
     }
 
-    function renderTeacherWordPool() {
-      const container = document.getElementById('dash-word-pool');
-      const calledSet = new Set(state.calledWords);
-      document.getElementById('dash-called-progress').textContent =
-        `호명된 단어: ${state.calledWords.length} / ${state.wordPool.length}개`;
+    async function teacherStartTurnGame() {
+      const studentsArr = Object.entries(state.studentsMap).map(([id, s]) => ({
+        id,
+        name: s.name,
+        ready: !!s.ready
+      }));
 
-      const latestEl = document.getElementById('dash-latest-word');
-      latestEl.textContent = state.calledWords.length > 0
-        ? state.calledWords[state.calledWords.length - 1]
-        : '단어를 뽑아주세요!';
+      const readyStudents = studentsArr.filter(s => s.ready);
+      const pool = readyStudents.length > 0 ? readyStudents : studentsArr;
 
-      container.innerHTML = state.wordPool.map(word => {
-        const isCalled = calledSet.has(word);
-        return `
-          <button type="button" onclick="toggleCallWord('${escapeAttr(word)}')"
-            class="px-2 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition truncate ${
-              isCalled
-                ? 'bg-blue-600 text-white border-blue-700 shadow-sm'
-                : 'bg-slate-50 hover:bg-blue-50 text-slate-700 border-slate-200'
-            }">
-            ${escapeHtml(word)}
-          </button>
-        `;
-      }).join('');
-    }
-
-    async function toggleCallWord(word) {
-      const idx = state.calledWords.indexOf(word);
-      if (idx === -1) {
-        state.calledWords.push(word);
-        playTone('line');
-      } else {
-        state.calledWords.splice(idx, 1);
-        playTone('unclick');
-      }
-      renderTeacherWordPool();
-      await db.ref(`bingo_rooms/${state.roomCode}/calledWords`).set(state.calledWords);
-    }
-
-    async function teacherDrawRandomWord() {
-      const calledSet = new Set(state.calledWords);
-      const remaining = state.wordPool.filter(w => !calledSet.has(w));
-      if (remaining.length === 0) {
-        showToast('모든 단어를 이미 다 뽑았습니다!');
+      if (pool.length === 0) {
+        showToast('입장한 학생이 최소 1명 이상 있어야 시작할 수 있습니다!');
         return;
       }
-      const picked = remaining[Math.floor(Math.random() * remaining.length)];
-      state.calledWords.push(picked);
+
+      const shuffledOrder = trueRandomShuffle(pool).map(s => ({ id: s.id, name: s.name }));
       playTone('line');
-      renderTeacherWordPool();
 
-      const latestEl = document.getElementById('dash-latest-word');
-      latestEl.classList.remove('animate-pop-in');
-      void latestEl.offsetWidth;
-      latestEl.classList.add('animate-pop-in');
-
-      await db.ref(`bingo_rooms/${state.roomCode}/calledWords`).set(state.calledWords);
+      await db.ref(`bingo_rooms/${state.roomCode}`).update({
+        status: 'playing',
+        calledWords: [],
+        turnOrder: shuffledOrder,
+        currentTurnIndex: 0
+      });
     }
 
-    async function teacherResetGame() {
-      state.calledWords = [];
-      renderTeacherWordPool();
-      await db.ref(`bingo_rooms/${state.roomCode}/calledWords`).set([]);
-      showToast('호명된 단어가 초기화되었습니다.');
+    async function teacherSkipCurrentTurn() {
+      if (state.turnOrder.length === 0) return;
+      const nextIdx = (state.currentTurnIndex + 1) % state.turnOrder.length;
+      playTone('click');
+      await db.ref(`bingo_rooms/${state.roomCode}`).update({
+        currentTurnIndex: nextIdx
+      });
+      showToast('다음 학생 차례로 넘겼습니다.');
     }
 
-    function renderTeacherStudentList(studentsObj) {
-      const list = Object.entries(studentsObj).map(([id, data]) => ({ id, ...data }));
-      document.getElementById('dash-student-count').textContent = `참여 ${list.length}명`;
+    async function teacherResetToLobby() {
+      const updates = {
+        status: 'waiting',
+        calledWords: [],
+        turnOrder: [],
+        currentTurnIndex: 0
+      };
+      Object.keys(state.studentsMap).forEach(stuId => {
+        updates[`students/${stuId}/bingoLines`] = 0;
+        updates[`students/${stuId}/achievedGoalAt`] = null;
+      });
+      await db.ref(`bingo_rooms/${state.roomCode}`).update(updates);
+      showToast('새 판을 위해 초기화되었습니다.');
+    }
 
-      const container = document.getElementById('dash-student-list');
-      if (list.length === 0) {
-        container.innerHTML = `<div class="py-12 text-center text-sm text-slate-400">아직 입장한 학생이 없습니다.</div>`;
-        return;
+    function renderTeacherDashboardUI() {
+      const statusPill = document.getElementById('dash-status-pill');
+      const waitingBox = document.getElementById('dash-waiting-controls');
+      const playingBox = document.getElementById('dash-playing-controls');
+
+      if (state.roomStatus === 'playing') {
+        statusPill.className = 'px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-bold';
+        statusPill.textContent = '🟢 게임 진행 중 (랜덤 턴제)';
+        waitingBox.classList.add('hidden');
+        playingBox.classList.remove('hidden');
+
+        const order = state.turnOrder;
+        const curIdx = order.length > 0 ? state.currentTurnIndex % order.length : 0;
+        const nextIdx = order.length > 0 ? (curIdx + 1) % order.length : 0;
+
+        document.getElementById('dash-current-turn-name').textContent = order[curIdx] ? order[curIdx].name : '-';
+        document.getElementById('dash-next-turn-preview').textContent = order[nextIdx] ? `다음 차례: ${order[nextIdx].name}` : '';
+
+        const latestWord = state.calledWords.length > 0 ? state.calledWords[state.calledWords.length - 1] : '선택 대기 중';
+        document.getElementById('dash-latest-word').textContent = latestWord;
+        document.getElementById('dash-called-count-label').textContent = `총 ${state.calledWords.length}개 체크됨`;
+
+        document.getElementById('dash-turn-order-chips').innerHTML = order.map((item, idx) => {
+          const isCurrent = idx === curIdx;
+          return `
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 ${
+              isCurrent
+                ? 'bg-amber-400 text-slate-900 shadow scale-105 ring-2 ring-white'
+                : 'bg-white/15 text-white/90'
+            }">
+              <span>${idx + 1}.</span>
+              <span>${escapeHtml(item.name)}</span>
+              ${isCurrent ? '<span>👈</span>' : ''}
+            </span>
+          `;
+        }).join('');
+      } else {
+        statusPill.className = 'px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold';
+        statusPill.textContent = '🟡 대기 중 (학생 입장 단계)';
+        waitingBox.classList.remove('hidden');
+        playingBox.classList.add('hidden');
       }
 
-      // 빙고 줄 수 내림차순 -> 목표 달성 시간 오름차순 정렬
-      list.sort((a, b) => {
-        if ((b.bingoLines || 0) !== (a.bingoLines || 0)) {
-          return (b.bingoLines || 0) - (a.bingoLines || 0);
-        }
-        return (a.updatedAt || 0) - (b.updatedAt || 0);
-      });
+      const students = Object.entries(state.studentsMap).map(([id, data]) => ({ id, ...data }));
+      document.getElementById('dash-student-count').textContent = `총 ${students.length}명`;
 
-      container.innerHTML = list.map((stu, idx) => {
-        const lines = stu.bingoLines || 0;
-        const isWinner = lines >= state.targetLines;
-        const statusText = stu.ready ? `${lines}줄 빙고` : '빙고판 배치 중...';
+      // 1. 목표 줄 수 달성 순위표
+      const winners = students
+        .filter(s => (s.bingoLines || 0) >= state.targetLines)
+        .sort((a, b) => (a.achievedGoalAt || a.updatedAt || 0) - (b.achievedGoalAt || b.updatedAt || 0));
 
-        return `
-          <div class="p-3 rounded-2xl border-2 flex items-center justify-between gap-2 transition ${
-            isWinner
-              ? 'bg-amber-50 border-amber-400 shadow-sm'
-              : 'bg-slate-50 border-slate-200'
-          }">
-            <div class="flex items-center gap-2.5">
-              <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${
-                isWinner ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700'
-              }">
-                ${isWinner ? '🏆' : idx + 1}
+      document.getElementById('dash-winner-count').textContent = `달성 ${winners.length}명`;
+      const winnersContainer = document.getElementById('dash-winners-list');
+
+      if (winners.length === 0) {
+        winnersContainer.innerHTML = `<div class="py-5 text-center text-sm text-slate-400">아직 ${state.targetLines}줄 빙고를 완성한 학생이 없습니다.</div>`;
+      } else {
+        winnersContainer.innerHTML = winners.map((w, idx) => {
+          const medal = idx === 0 ? '🥇 1등' : idx === 1 ? '🥈 2등' : idx === 2 ? '🥉 3등' : `${idx + 1}위`;
+          return `
+            <div class="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-xl bg-amber-500 text-white font-title text-base shadow-sm">${medal}</span>
+                <span class="font-bold text-base text-slate-800">${escapeHtml(w.name)}</span>
               </div>
-              <div>
-                <div class="font-bold text-sm text-slate-800">${escapeHtml(stu.name)}</div>
-                <div class="text-[11px] ${stu.ready ? 'text-emerald-600 font-medium' : 'text-amber-600'}">
-                  ${stu.ready ? '● 준비 완료' : '○ 판 채우는 중'}
-                </div>
-              </div>
+              <span class="font-title text-lg text-amber-700">${w.bingoLines}줄 완성!</span>
             </div>
+          `;
+        }).join('');
+      }
 
-            <div class="px-3 py-1 rounded-xl font-title text-base ${
-              isWinner
-                ? 'bg-amber-500 text-white'
-                : lines > 0
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-slate-500 border border-slate-200'
-            }">
-              ${statusText}
+      // 2. 줄 수별 완성자 현황 버킷
+      const maxLineDisplay = Math.max(state.targetLines, ...students.map(s => s.bingoLines || 0));
+      const bucketsContainer = document.getElementById('dash-line-buckets');
+      let bucketsHtml = '';
+
+      for (let lineNum = maxLineDisplay; lineNum >= 1; lineNum--) {
+        const matchedStudents = students.filter(s => (s.bingoLines || 0) === lineNum);
+        const isGoalLine = lineNum >= state.targetLines;
+
+        bucketsHtml += `
+          <div class="p-3 rounded-2xl border ${isGoalLine ? 'bg-blue-50/70 border-blue-200' : 'bg-slate-50 border-slate-200'}">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-title text-base ${isGoalLine ? 'text-blue-700' : 'text-slate-700'}">
+                ${lineNum}줄 빙고 완성 ${isGoalLine ? '🎉 (목표 달성)' : ''}
+              </span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full ${matchedStudents.length > 0 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}">
+                ${matchedStudents.length}명
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${
+                matchedStudents.length > 0
+                  ? matchedStudents.map(s => `<span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-800 shadow-xs">${escapeHtml(s.name)}</span>`).join('')
+                  : '<span class="text-xs text-slate-400">해당 학생 없음</span>'
+              }
             </div>
           </div>
         `;
-      }).join('');
+      }
+      bucketsContainer.innerHTML = bucketsHtml;
+
+      // 3. 전체 참여 학생 리스트
+      const listContainer = document.getElementById('dash-student-list');
+      if (students.length === 0) {
+        listContainer.innerHTML = `<div class="py-8 text-center text-sm text-slate-400">아직 입장한 학생이 없습니다.</div>`;
+      } else {
+        students.sort((a, b) => (b.bingoLines || 0) - (a.bingoLines || 0));
+        listContainer.innerHTML = students.map(stu => {
+          const lines = stu.bingoLines || 0;
+          return `
+            <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${stu.ready ? 'bg-emerald-500' : 'bg-amber-400'}"></span>
+                <span class="font-bold text-sm text-slate-800">${escapeHtml(stu.name)}</span>
+                <span class="text-[11px] text-slate-400">${stu.ready ? '준비완료' : '배치중'}</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold ${lines >= state.targetLines ? 'bg-amber-500 text-white' : lines > 0 ? 'bg-blue-600 text-white' : 'bg-white text-slate-500 border'}">
+                ${lines}줄
+              </span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. 지금까지 나온 단어 기록
+      const historyBox = document.getElementById('dash-called-history-box');
+      historyBox.innerHTML = state.calledWords.length > 0
+        ? state.calledWords.map((w, i) => `<span class="px-2.5 py-1 rounded-lg bg-white border border-blue-200 text-xs font-bold text-blue-800">${i + 1}. ${escapeHtml(w)}</span>`).join('')
+        : '<span class="text-xs text-slate-400">아직 선택된 단어가 없습니다.</span>';
     }
 
     function copyJoinUrl() {
@@ -1204,30 +1309,23 @@ const DEFAULT_FIREBASE_CONFIG = {
     }
 
     /* ==========================================================================
-       8. 학생 입장 & 빙고판 배치 로직
+       9. 학생 입장 & 빙고판 작성 (1. 직접 타이핑 + 2. 터치 + 3. 완전 랜덤 자동)
     ========================================================================== */
     async function joinRoomAsStudent() {
       if (!isFirebaseReady) {
-        showToast('Firebase DB가 연결되지 않았습니다. 상단 [🔥 DB 서버 설정]을 먼저 완료하세요.');
-        openFirebaseModal();
+        showToast('Firebase DB가 연결되지 않았습니다.');
         return;
       }
 
       const code = document.getElementById('join-room-code').value.trim();
       const name = document.getElementById('join-student-name').value.trim();
 
-      if (!code || code.length < 4) {
-        showToast('4자리 방 코드를 입력해주세요!');
-        return;
-      }
-      if (!name) {
-        showToast('내 이름이나 번호를 입력해주세요!');
-        return;
-      }
+      if (!code || code.length < 4) { showToast('4자리 방 코드를 입력해주세요!'); return; }
+      if (!name) { showToast('내 이름이나 번호를 입력해주세요!'); return; }
 
       const roomSnap = await db.ref(`bingo_rooms/${code}`).once('value');
       if (!roomSnap.exists()) {
-        showToast('존재하지 않는 방 코드입니다. 번호를 다시 확인해주세요!');
+        showToast('존재하지 않는 방 코드입니다.');
         return;
       }
 
@@ -1236,14 +1334,12 @@ const DEFAULT_FIREBASE_CONFIG = {
       state.roomTitle = roomData.title;
       state.gridSize = roomData.gridSize || 5;
       state.targetLines = roomData.targetLines || 3;
-      state.strictCallMode = roomData.strictCallMode !== false;
       state.wordPool = roomData.words || [];
       state.calledWords = roomData.calledWords || [];
 
       state.studentName = name;
-      state.studentId = 'stu_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      state.studentId = 'stu_' + Date.now() + '_' + cryptoRandomInt(10000);
 
-      // 학생 입장 등록
       await db.ref(`bingo_rooms/${code}/students/${state.studentId}`).set({
         name,
         ready: false,
@@ -1257,61 +1353,131 @@ const DEFAULT_FIREBASE_CONFIG = {
     function enterStudentBoardSetup() {
       state.mode = 'student-setup';
       const needed = state.gridSize * state.gridSize;
-      state.setupBoard = new Array(needed).fill(null);
+      state.setupBoard = new Array(needed).fill('');
 
       document.getElementById('stu-setup-room-badge').textContent = `방 코드: ${state.roomCode} (${state.roomTitle})`;
       document.getElementById('stu-setup-name').textContent = state.studentName;
 
+      // 제시어가 있을 때만 자동 채우기 버튼 표시 (자유 입력 방이면 숫자/랜덤 풀 안내)
+      const autoBtn = document.getElementById('stu-autofill-btn');
+      if (state.wordPool.length > 0) {
+        autoBtn.textContent = '🎲 완전 랜덤 자동 채우기';
+      } else {
+        autoBtn.textContent = `🎲 1~${needed} 랜덤 숫자 채우기`;
+      }
+
       switchView('view-student-setup');
-      renderStudentSetupUI();
+      renderStudentSetupGrid();
+      refreshStudentSetupStatusAndBank();
     }
 
-    function renderStudentSetupUI() {
+    // 입력 포커스가 날아가지 않도록 그리드는 최초 1회 및 전체 변경 시에만 DOM 생성
+    function renderStudentSetupGrid() {
       const size = state.gridSize;
-      const needed = size * size;
       const gridEl = document.getElementById('stu-setup-grid');
       gridEl.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
       gridEl.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
 
-      const placedSet = new Set(state.setupBoard.filter(Boolean));
-      const filledCount = placedSet.size;
+      gridEl.innerHTML = state.setupBoard.map((word, idx) => {
+        const hasVal = word.trim().length > 0;
+        return `
+          <div class="relative rounded-xl border-2 transition flex items-center justify-center ${
+            hasVal
+              ? 'bg-emerald-50 border-emerald-400 shadow-xs'
+              : 'bg-slate-50 border-dashed border-slate-300 focus-within:border-emerald-500 focus-within:bg-white'
+          }" id="setup-cell-wrap-${idx}">
+            <input type="text"
+              id="setup-cell-input-${idx}"
+              value="${escapeAttr(word)}"
+              placeholder="${idx + 1}"
+              maxlength="16"
+              oninput="handleSetupCellTyping(${idx}, this.value)"
+              class="w-full h-full bg-transparent text-center font-bold text-xs sm:text-sm text-slate-800 placeholder-slate-400 outline-none px-1.5" />
+            <button type="button"
+              id="setup-cell-clear-${idx}"
+              onclick="clearSingleSetupCell(${idx})"
+              title="칸 지우기"
+              class="${hasVal ? '' : 'hidden'} absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-slate-200/80 hover:bg-rose-500 hover:text-white text-slate-600 text-[10px] flex items-center justify-center leading-none">
+              ✕
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleSetupCellTyping(idx, val) {
+      state.setupBoard[idx] = val;
+      const wrap = document.getElementById(`setup-cell-wrap-${idx}`);
+      const clearBtn = document.getElementById(`setup-cell-clear-${idx}`);
+      const hasVal = val.trim().length > 0;
+
+      if (wrap) {
+        wrap.className = `relative rounded-xl border-2 transition flex items-center justify-center ${
+          hasVal
+            ? 'bg-emerald-50 border-emerald-400 shadow-xs'
+            : 'bg-slate-50 border-dashed border-slate-300 focus-within:border-emerald-500 focus-within:bg-white'
+        }`;
+      }
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !hasVal);
+      }
+      refreshStudentSetupStatusAndBank();
+    }
+
+    function clearSingleSetupCell(idx) {
+      state.setupBoard[idx] = '';
+      const input = document.getElementById(`setup-cell-input-${idx}`);
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      handleSetupCellTyping(idx, '');
+      playTone('unclick');
+    }
+
+    function refreshStudentSetupStatusAndBank() {
+      const needed = state.gridSize * state.gridSize;
+      const trimmedList = state.setupBoard.map(w => w.trim());
+      const filledCount = trimmedList.filter(w => w.length > 0).length;
+      const usedSet = new Set(trimmedList.filter(w => w.length > 0));
 
       document.getElementById('stu-setup-progress').textContent = `${filledCount} / ${needed}칸 완료`;
 
-      // 준비 완료 버튼 활성화 여부
       const readyBtn = document.getElementById('stu-ready-btn');
       if (filledCount === needed) {
         readyBtn.disabled = false;
         readyBtn.className = 'w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-title text-xl shadow-lg transition cursor-pointer';
-        readyBtn.textContent = '✅ 배치 완료! 게임 시작하기';
+        readyBtn.textContent = '✅ 작성 완료! 대기실 입장';
       } else {
         readyBtn.disabled = true;
         readyBtn.className = 'w-full py-3.5 rounded-2xl bg-slate-300 text-white font-title text-xl transition cursor-not-allowed';
         readyBtn.textContent = `${needed - filledCount}칸 더 채워주세요`;
       }
 
-      // 그리드 렌더링
-      gridEl.innerHTML = state.setupBoard.map((word, idx) => `
-        <button type="button" onclick="removeWordFromSetupCell(${idx})"
-          class="rounded-xl border-2 p-1 flex items-center justify-center text-center font-bold text-xs sm:text-sm break-keep transition ${
-            word
-              ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
-              : 'bg-slate-50 border-dashed border-slate-300 text-slate-400'
-          }">
-          ${word ? escapeHtml(word) : idx + 1}
-        </button>
-      `).join('');
-
-      // 단어 선택지 렌더링
+      // 오른쪽 제시어 터치 목록 업데이트
       const bankEl = document.getElementById('stu-word-bank');
+      const countBadge = document.getElementById('stu-word-bank-count');
+
+      if (!state.wordPool || state.wordPool.length === 0) {
+        countBadge.textContent = '자유 주제 방';
+        bankEl.innerHTML = `
+          <div class="col-span-full py-8 px-3 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs text-slate-500 leading-relaxed">
+            선생님이 제시어를 지정하지 않은 <strong>자유 입력 방</strong>입니다.<br/>
+            왼쪽 빙고 칸을 터치해서 원하는 단어를 직접 입력하세요!
+          </div>
+        `;
+        return;
+      }
+
+      countBadge.textContent = `총 ${state.wordPool.length}개 제시어`;
       bankEl.innerHTML = state.wordPool.map(word => {
-        const isUsed = placedSet.has(word);
+        const isUsed = usedSet.has(word);
         return `
           <button type="button" ${isUsed ? 'disabled' : ''} onclick="placeWordToNextSetupCell('${escapeAttr(word)}')"
-            class="px-2 py-2 rounded-xl text-xs font-bold border truncate transition ${
+            class="px-2 py-2.5 rounded-xl text-xs font-bold border truncate transition ${
               isUsed
                 ? 'bg-slate-100 text-slate-300 border-slate-100 cursor-not-allowed line-through'
-                : 'bg-white hover:bg-emerald-50 text-slate-700 border-slate-200 hover:border-emerald-300'
+                : 'bg-white hover:bg-emerald-50 text-slate-700 border-slate-200 hover:border-emerald-400 active:scale-95 shadow-2xs'
             }">
             ${escapeHtml(word)}
           </button>
@@ -1320,45 +1486,72 @@ const DEFAULT_FIREBASE_CONFIG = {
     }
 
     function placeWordToNextSetupCell(word) {
-      const emptyIdx = state.setupBoard.indexOf(null);
+      const emptyIdx = state.setupBoard.findIndex(w => w.trim().length === 0);
       if (emptyIdx === -1) {
         showToast('이미 모든 칸이 채워졌습니다!');
         return;
       }
       state.setupBoard[emptyIdx] = word;
       playTone('click');
-      renderStudentSetupUI();
+      renderStudentSetupGrid();
+      refreshStudentSetupStatusAndBank();
     }
 
-    function removeWordFromSetupCell(idx) {
-      if (!state.setupBoard[idx]) return;
-      state.setupBoard[idx] = null;
-      playTone('unclick');
-      renderStudentSetupUI();
-    }
-
+    // 완전 랜덤 자동 채우기 (모든 학생이 서로 다른 배열로 섞임)
     function studentAutoFillBoard() {
       const needed = state.gridSize * state.gridSize;
-      state.setupBoard = shuffleArray([...state.wordPool]).slice(0, needed);
+      let pool = [];
+
+      if (state.wordPool && state.wordPool.length > 0) {
+        pool = [...state.wordPool];
+        // 만약 선생님이 입력한 단어가 칸 수보다 적으면 숫자로 보충
+        let num = 1;
+        while (pool.length < needed) {
+          const cand = String(num++);
+          if (!pool.includes(cand)) pool.push(cand);
+        }
+      } else {
+        // 자유 입력 방일 경우 1 ~ needed 숫자 풀 생성
+        pool = Array.from({ length: needed }, (_, i) => String(i + 1));
+      }
+
+      // 암호학적 난수로 매번 완전히 새로운 순서와 조합 추출
+      state.setupBoard = trueRandomShuffle(pool).slice(0, needed);
       playTone('line');
-      renderStudentSetupUI();
+      renderStudentSetupGrid();
+      refreshStudentSetupStatusAndBank();
+      showToast('🎲 완전 랜덤으로 빙고판이 채워졌습니다!');
     }
 
     function studentClearBoard() {
-      state.setupBoard.fill(null);
+      state.setupBoard.fill('');
       playTone('unclick');
-      renderStudentSetupUI();
+      renderStudentSetupGrid();
+      refreshStudentSetupStatusAndBank();
     }
 
     async function studentConfirmBoard() {
       const needed = state.gridSize * state.gridSize;
-      if (state.setupBoard.includes(null)) return;
+      const cleanedBoard = state.setupBoard.map(w => w.trim());
+
+      if (cleanedBoard.some(w => w.length === 0)) {
+        showToast('빈 칸을 모두 채워주세요!');
+        return;
+      }
+
+      // 중복 단어 체크
+      const uniqueCheck = new Set(cleanedBoard);
+      if (uniqueCheck.size < needed) {
+        showToast('⚠️ 같은 단어가 중복으로 들어갔습니다! 서로 다른 단어로 채워주세요.');
+        return;
+      }
 
       state.mode = 'gameplay-student';
-      state.boardWords = [...state.setupBoard];
+      state.boardWords = cleanedBoard;
       state.marked = new Array(needed).fill(false);
       state.winningIndices.clear();
       state.completedLines = 0;
+      state.achievedGoalAt = null;
       state.hasCelebrated = false;
 
       await db.ref(`bingo_rooms/${state.roomCode}/students/${state.studentId}`).update({
@@ -1373,49 +1566,118 @@ const DEFAULT_FIREBASE_CONFIG = {
       document.getElementById('play-target-lines').textContent = state.targetLines;
       document.getElementById('play-player-label').textContent = `👤 ${state.studentName}`;
 
-      // 선생님이 부르는 단어 실시간 수신
-      const calledRef = db.ref(`bingo_rooms/${state.roomCode}/calledWords`);
-      const onCalledChange = calledRef.on('value', snap => {
-        state.calledWords = snap.val() || [];
-        updateStudentLiveCalledBanner();
-      });
-      activeListeners.push({ ref: calledRef, event: 'value', fn: onCalledChange });
+      const roomRef = db.ref(`bingo_rooms/${state.roomCode}`);
+      let wasMyTurnPrev = false;
 
+      const onRoomUpdate = roomRef.on('value', async snap => {
+        const data = snap.val();
+        if (!data) return;
+
+        state.roomStatus = data.status || 'waiting';
+        state.calledWords = data.calledWords || [];
+        state.turnOrder = data.turnOrder || [];
+        state.currentTurnIndex = data.currentTurnIndex || 0;
+
+        if (state.roomStatus === 'waiting' && state.calledWords.length === 0 && state.marked.some(Boolean)) {
+          state.marked.fill(false);
+          state.winningIndices.clear();
+          state.completedLines = 0;
+          state.achievedGoalAt = null;
+          state.hasCelebrated = false;
+        }
+
+        // 실시간 동기화: 방의 calledWords에 포함된 단어는 내 빙고판에서 자동 체크!
+        const calledSet = new Set(state.calledWords);
+        let changed = false;
+        state.boardWords.forEach((word, idx) => {
+          const shouldBeMarked = calledSet.has(word);
+          if (state.marked[idx] !== shouldBeMarked) {
+            state.marked[idx] = shouldBeMarked;
+            changed = true;
+          }
+        });
+
+        const isMyTurnNow = isStudentMyTurn();
+        if (isMyTurnNow && !wasMyTurnPrev) {
+          playTone('myturn');
+        }
+        wasMyTurnPrev = isMyTurnNow;
+
+        updateStudentTurnBanner();
+
+        if (changed) {
+          const prevLines = state.completedLines;
+          evaluateBingoLines();
+
+          if (state.completedLines !== prevLines) {
+            const updatePayload = {
+              bingoLines: state.completedLines,
+              updatedAt: firebase.database.ServerValue.TIMESTAMP
+            };
+            if (state.completedLines >= state.targetLines && !state.achievedGoalAt) {
+              state.achievedGoalAt = Date.now();
+              updatePayload.achievedGoalAt = firebase.database.ServerValue.TIMESTAMP;
+            }
+            await db.ref(`bingo_rooms/${state.roomCode}/students/${state.studentId}`).update(updatePayload);
+          }
+        }
+
+        renderGameplayBoard();
+      });
+
+      activeListeners.push({ ref: roomRef, event: 'value', fn: onRoomUpdate });
       renderGameplayBoard();
     }
 
-    function updateStudentLiveCalledBanner() {
-      const latestEl = document.getElementById('stu-latest-called');
-      const historyEl = document.getElementById('stu-called-history');
+    function isStudentMyTurn() {
+      if (state.mode !== 'gameplay-student') return false;
+      if (state.roomStatus !== 'playing') return false;
+      if (!state.turnOrder || state.turnOrder.length === 0) return false;
+      const cur = state.turnOrder[state.currentTurnIndex % state.turnOrder.length];
+      return cur && cur.id === state.studentId;
+    }
 
-      if (state.calledWords.length === 0) {
-        latestEl.textContent = '선생님 호명 대기 중...';
-        historyEl.innerHTML = '<span class="text-xs text-blue-200/70">없음</span>';
+    function updateStudentTurnBanner() {
+      const banner = document.getElementById('stu-live-banner');
+      const badge = document.getElementById('stu-turn-badge');
+      const headline = document.getElementById('stu-turn-headline');
+      const latestWordEl = document.getElementById('stu-latest-called');
+
+      latestWordEl.textContent = state.calledWords.length > 0
+        ? state.calledWords[state.calledWords.length - 1]
+        : '-';
+
+      if (state.roomStatus !== 'playing') {
+        banner.className = 'rounded-2xl p-4 shadow-md mb-3 bg-slate-800 text-white';
+        badge.textContent = '⏳ 대기 중';
+        headline.textContent = '선생님이 게임을 시작할 때까지 기다려주세요!';
         return;
       }
 
-      const latest = state.calledWords[state.calledWords.length - 1];
-      latestEl.textContent = latest;
-      playTone('click');
-
-      const prevWords = state.calledWords.slice(0, -1).reverse().slice(0, 6);
-      historyEl.innerHTML = prevWords.length > 0
-        ? prevWords.map(w => `<span class="px-2 py-0.5 rounded bg-white/20 text-[11px] font-bold">${escapeHtml(w)}</span>`).join('')
-        : '<span class="text-xs text-blue-200/70">첫 번째 단어</span>';
+      const cur = state.turnOrder[state.currentTurnIndex % state.turnOrder.length];
+      if (isStudentMyTurn()) {
+        banner.className = 'rounded-2xl p-4 shadow-lg mb-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white ring-4 ring-emerald-200';
+        badge.textContent = '🔥 지금 내 차례입니다!';
+        headline.textContent = '원하는 빙고 칸을 터치해서 선택하세요!';
+      } else {
+        banner.className = 'rounded-2xl p-4 shadow-md mb-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white';
+        badge.textContent = '👀 다른 친구 차례';
+        headline.textContent = `[${cur ? cur.name : '친구'}] 님이 단어를 고르는 중입니다...`;
+      }
     }
 
     /* ==========================================================================
-       9. 로컬 단독 모드 & 공용 게임플레이 보드 로직
+       10. 보드 렌더링 & 클릭 처리
     ========================================================================== */
     function startSoloGameplay(words) {
       state.mode = 'gameplay-solo';
-      state.boardWords = shuffleArray([...words]);
+      state.boardWords = trueRandomShuffle(words);
       state.marked = new Array(words.length).fill(false);
       state.winningIndices.clear();
       state.completedLines = 0;
       state.hasCelebrated = false;
 
-      state.soloDrawerPool = shuffleArray([...state.boardWords]);
+      state.soloDrawerPool = trueRandomShuffle(state.boardWords);
       state.soloDrawnHistory = [];
 
       switchView('view-gameplay');
@@ -1433,6 +1695,8 @@ const DEFAULT_FIREBASE_CONFIG = {
       gridEl.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
       gridEl.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
 
+      const canPick = state.mode === 'gameplay-solo' || isStudentMyTurn();
+
       gridEl.innerHTML = state.boardWords.map((word, idx) => {
         const isMarked = state.marked[idx];
         const isWin = state.winningIndices.has(idx);
@@ -1442,9 +1706,16 @@ const DEFAULT_FIREBASE_CONFIG = {
         else if (size === 4) fontClass = word.length > 6 ? 'text-sm sm:text-xl' : 'text-xl sm:text-3xl';
         else fontClass = word.length >= 7 ? 'text-xs sm:text-sm' : word.length >= 4 ? 'text-sm sm:text-lg' : 'text-base sm:text-2xl';
 
-        let stateClass = 'bg-slate-50 hover:bg-blue-50 text-slate-800 border-2 border-slate-200';
-        if (isWin) stateClass = 'bingo-line border-2';
-        else if (isMarked) stateClass = 'marked border-2';
+        let stateClass = 'bg-slate-50 text-slate-800 border-2 border-slate-200';
+        if (isWin) {
+          stateClass = 'bingo-line border-2';
+        } else if (isMarked) {
+          stateClass = 'marked border-2';
+        } else if (canPick) {
+          stateClass = 'bg-white text-slate-800 border-2 border-emerald-300 my-turn-clickable cursor-pointer shadow-xs';
+        } else {
+          stateClass = 'bg-slate-50/80 text-slate-600 border-2 border-slate-200 cursor-not-allowed';
+        }
 
         return `
           <button type="button" onclick="handleGameplayCellClick(${idx})"
@@ -1459,26 +1730,42 @@ const DEFAULT_FIREBASE_CONFIG = {
     async function handleGameplayCellClick(idx) {
       const word = state.boardWords[idx];
 
-      // 학생 모드 + 엄격 모드일 경우 선생님이 부른 단어만 체크 허용
-      if (state.mode === 'gameplay-student' && state.strictCallMode && !state.marked[idx]) {
-        if (!state.calledWords.includes(word)) {
-          showToast('⚠️ 선생님이 아직 부르지 않은 단어입니다!');
-          return;
-        }
+      if (state.mode === 'gameplay-solo') {
+        state.marked[idx] = !state.marked[idx];
+        playTone(state.marked[idx] ? 'click' : 'unclick');
+        evaluateBingoLines();
+        renderGameplayBoard();
+        return;
       }
 
-      state.marked[idx] = !state.marked[idx];
-      playTone(state.marked[idx] ? 'click' : 'unclick');
+      if (state.roomStatus !== 'playing') {
+        showToast('아직 선생님이 게임을 시작하지 않았습니다!');
+        return;
+      }
+      if (!isStudentMyTurn()) {
+        const cur = state.turnOrder[state.currentTurnIndex % state.turnOrder.length];
+        showToast(`지금은 [${cur ? cur.name : '다른 친구'}] 차례입니다!`);
+        return;
+      }
+      if (state.marked[idx] || state.calledWords.includes(word)) {
+        showToast('이미 선택된 단어입니다! 다른 칸을 골라주세요.');
+        return;
+      }
+      if (state.isSubmittingTurn) return;
 
-      evaluateBingoLines();
-      renderGameplayBoard();
+      state.isSubmittingTurn = true;
+      playTone('click');
 
-      // 학생 모드라면 실시간 빙고 줄 수 서버 동기화
-      if (state.mode === 'gameplay-student' && db) {
-        await db.ref(`bingo_rooms/${state.roomCode}/students/${state.studentId}`).update({
-          bingoLines: state.completedLines,
-          updatedAt: firebase.database.ServerValue.TIMESTAMP
+      try {
+        const updatedCalled = [...state.calledWords, word];
+        const nextTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
+
+        await db.ref(`bingo_rooms/${state.roomCode}`).update({
+          calledWords: updatedCalled,
+          currentTurnIndex: nextTurnIndex
         });
+      } finally {
+        state.isSubmittingTurn = false;
       }
     }
 
@@ -1524,8 +1811,7 @@ const DEFAULT_FIREBASE_CONFIG = {
         }
         document.getElementById('victory-lines-text').textContent = `${count}줄 빙고`;
         const m = document.getElementById('victory-modal');
-        m.classList.remove('hidden');
-        m.classList.add('flex');
+        m.classList.remove('hidden'); m.classList.add('flex');
       } else if (count > prev) {
         playTone('line');
         showToast(`🎉 ${count}줄 빙고 완성!`);
@@ -1534,32 +1820,25 @@ const DEFAULT_FIREBASE_CONFIG = {
 
     function closeVictoryModal() {
       const m = document.getElementById('victory-modal');
-      m.classList.add('hidden');
-      m.classList.remove('flex');
+      m.classList.add('hidden'); m.classList.remove('flex');
     }
 
-    // 로컬 단독 모드 전용 추첨기 & 판 관리
+    // 로컬 단독 모드 전용
     function openSoloDrawerModal() {
       updateSoloDrawerUI();
       const m = document.getElementById('solo-drawer-modal');
-      m.classList.remove('hidden');
-      m.classList.add('flex');
+      m.classList.remove('hidden'); m.classList.add('flex');
     }
     function closeSoloDrawerModal() {
       const m = document.getElementById('solo-drawer-modal');
-      m.classList.add('hidden');
-      m.classList.remove('flex');
+      m.classList.add('hidden'); m.classList.remove('flex');
     }
     function soloDrawNextWord() {
-      if (state.soloDrawerPool.length === 0) {
-        showToast('모든 단어를 다 뽑았습니다!');
-        return;
-      }
+      if (state.soloDrawerPool.length === 0) { showToast('모든 단어를 다 뽑았습니다!'); return; }
       const w = state.soloDrawerPool.pop();
       state.soloDrawnHistory.unshift(w);
       document.getElementById('solo-drawn-word').textContent = w;
       playTone('line');
-
       const idx = state.boardWords.indexOf(w);
       if (idx !== -1 && !state.marked[idx]) {
         state.marked[idx] = true;
@@ -1574,47 +1853,33 @@ const DEFAULT_FIREBASE_CONFIG = {
         .map(w => `<span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold">${escapeHtml(w)}</span>`)
         .join('');
     }
-    function soloReshuffle() {
-      startSoloGameplay(state.boardWords);
-      showToast('빙고판이 다시 섞였습니다.');
-    }
+    function soloReshuffle() { startSoloGameplay(state.boardWords); showToast('빙고판이 다시 섞였습니다.'); }
     function soloResetMarks() {
-      state.marked.fill(false);
-      state.winningIndices.clear();
-      state.completedLines = 0;
-      state.hasCelebrated = false;
+      state.marked.fill(false); state.winningIndices.clear(); state.completedLines = 0; state.hasCelebrated = false;
       document.getElementById('play-bingo-count').textContent = '0';
       renderGameplayBoard();
-      showToast('체크 표시가 초기화되었습니다.');
     }
 
     /* ==========================================================================
-       10. 내 단어장 저장 / 불러오기 (localStorage)
+       11. 단어장 저장 / 불러오기
     ========================================================================== */
     function getSavedSets() {
       try { return JSON.parse(localStorage.getItem(WORD_STORAGE_KEY) || '[]'); }
       catch { return []; }
     }
-    function updateSavedCountBadge() {
-      document.getElementById('saved-count').textContent = getSavedSets().length;
-    }
+    function updateSavedCountBadge() { document.getElementById('saved-count').textContent = getSavedSets().length; }
     function openSaveModal() {
       if (parseInputWords().length === 0) { showToast('단어를 먼저 입력하세요.'); return; }
       const m = document.getElementById('save-modal');
       m.classList.remove('hidden'); m.classList.add('flex');
     }
-    function closeSaveModal() {
-      const m = document.getElementById('save-modal');
-      m.classList.add('hidden'); m.classList.remove('flex');
-    }
+    function closeSaveModal() { const m = document.getElementById('save-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
     function confirmSaveWordSet() {
       const title = document.getElementById('save-title-input').value.trim() || `단어장 (${new Date().toLocaleDateString()})`;
       const list = getSavedSets();
       list.unshift({ id: Date.now(), title, gridSize: state.gridSize, words: parseInputWords() });
       localStorage.setItem(WORD_STORAGE_KEY, JSON.stringify(list));
-      updateSavedCountBadge();
-      closeSaveModal();
-      showToast('단어장이 저장되었습니다.');
+      updateSavedCountBadge(); closeSaveModal(); showToast('단어장이 저장되었습니다.');
     }
     function openLoadModal() {
       const list = getSavedSets();
@@ -1636,34 +1901,22 @@ const DEFAULT_FIREBASE_CONFIG = {
       const m = document.getElementById('load-modal');
       m.classList.remove('hidden'); m.classList.add('flex');
     }
-    function closeLoadModal() {
-      const m = document.getElementById('load-modal');
-      m.classList.add('hidden'); m.classList.remove('flex');
-    }
+    function closeLoadModal() { const m = document.getElementById('load-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
     function loadWordSet(id) {
       const found = getSavedSets().find(i => i.id === id);
       if (!found) return;
       setGridSize(found.gridSize || 5);
       document.getElementById('word-input-area').value = found.words.join('\n');
-      updateWordCount();
-      closeLoadModal();
+      updateWordCount(); closeLoadModal();
     }
     function deleteWordSet(id) {
       localStorage.setItem(WORD_STORAGE_KEY, JSON.stringify(getSavedSets().filter(i => i.id !== id)));
-      updateSavedCountBadge();
-      openLoadModal();
+      updateSavedCountBadge(); openLoadModal();
     }
 
     /* ==========================================================================
-       11. 유틸리티 및 부팅 초기화
+       12. 유틸리티 & 초기화
     ========================================================================== */
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
@@ -1684,7 +1937,6 @@ const DEFAULT_FIREBASE_CONFIG = {
       updateSavedCountBadge();
       applyPreset('fruits');
 
-      // QR코드 또는 URL 파라미터(?room=1234)로 접속 시 자동 방 코드 채움
       const params = new URLSearchParams(window.location.search);
       const roomParam = params.get('room');
       if (roomParam) {
